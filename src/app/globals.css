@@ -11,7 +11,7 @@
 
   --text-primary: #f5f5f5;
   --text-secondary: #a0a0a0;
-  --text-muted: #6f6f6f;
+  --text-muted: #f0ebeb;
   --text-faint: #3a3a3a;
 
   --border-subtle: rgba(255, 255, 255, 0.06);
@@ -625,7 +625,7 @@ body::before {
   right: -10%;
   width: 60vw;
   height: 60vw;
-  background: radial-gradient(ellipse at center, rgba(74,158,255,0.03) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(0,255,102,0.028) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -767,14 +767,14 @@ body::before {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: rgba(0, 255, 102, 0.42);
 }
 
 .marquee-dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--text-faint);
+  background: rgba(0, 255, 102, 0.35);
   flex-shrink: 0;
 }
 
@@ -795,7 +795,7 @@ body::before {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(calc(-50% + var(--gw-x, 0px)), calc(-50% + var(--gw-y, 0px)));
   font-size: clamp(6rem, 15vw, 18rem);
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -887,6 +887,7 @@ body::before {
   position: absolute;
   top: -5%;
   right: -2%;
+  transform: translate3d(var(--gw-x, 0px), var(--gw-y, 0px), 0);
   font-size: clamp(6rem, 18vw, 22rem);
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -1068,16 +1069,20 @@ body::before {
   position: relative;
   overflow: hidden;
   background: var(--bg-overlay);
+  perspective: 900px;
 }
 
 .project-visual-inner {
   position: absolute;
   inset: 0;
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg)) scale(var(--pv-scale, 1));
   transition: transform 0.6s var(--ease-out-expo);
+  will-change: transform;
 }
 
 .project-card:hover .project-visual-inner {
-  transform: scale(1.03);
+  --pv-scale: 1.03;
 }
 
 .project-number {
@@ -1177,6 +1182,7 @@ body::before {
   position: absolute;
   bottom: -2%;
   right: -2%;
+  transform: translate3d(var(--gw-x, 0px), var(--gw-y, 0px), 0);
   font-size: clamp(6rem, 18vw, 22rem);
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -1805,3 +1811,111 @@ body::before {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ============================================================
+   HERO STATUS TICKER
+   ============================================================ */
+.hero-ticker {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  overflow: hidden;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(8, 8, 8, 0.4);
+  pointer-events: none;
+}
+
+.hero-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 40s linear infinite;
+  will-change: transform;
+}
+
+.hero-ticker-content {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.hero-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.hero-ticker-item:last-child .hero-ticker-dot {
+  display: none;
+}
+
+.hero-ticker-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .hero-ticker {
+    display: none;
+  }
+}
+
+/* ============================================================
+   NAV SCROLL PROGRESS
+   ============================================================ */
+.nav-progress {
+  position: absolute;
+  left: var(--grid-pad);
+  right: var(--grid-pad);
+  bottom: 0;
+  height: 1px;
+  background: var(--border-subtle);
+  pointer-events: none;
+}
+
+.nav-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), rgba(74, 158, 255, 0));
+  transform-origin: left center;
+  transform: scaleX(var(--sp, 0));
+  will-change: transform;
+}
+
+/* ============================================================
+   HERO — TERMINAL DARK GREEN ATMOSPHERE
+   Scoped to #hero only: soft green radial glow + gentle
+   vignette; accent flips to terminal green for hero-owned
+   elements (vline pulse, ticker dots).
+   ============================================================ */
+#hero {
+  --accent: #00ff66;
+}
+
+#hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 68% 42%, rgba(0, 255, 102, 0.06), transparent 58%),
+    radial-gradient(ellipse at center, transparent 52%, rgba(0, 10, 5, 0.5) 100%);
+}
+
+#hero-canvas {
+  z-index: 1;
+}
+

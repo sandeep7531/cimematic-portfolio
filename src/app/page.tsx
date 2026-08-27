@@ -76,6 +76,9 @@ export default function Home() {
             <span />
             <span />
           </button>
+          <div className="nav-progress" aria-hidden="true">
+            <span />
+          </div>
         </nav>
       </header>
 
@@ -135,6 +138,32 @@ export default function Home() {
           <div className="hero-vline" aria-hidden="true">
             <div className="hero-vline-accent" />
           </div>
+
+          {/* Status ticker */}
+          {/* <div className="hero-ticker" aria-hidden="true">
+            <div className="hero-ticker-track">
+              {[0, 1].map((copy) => (
+                <div className="hero-ticker-content" key={copy}>
+                  {[
+                    "Senior Frontend Engineer",
+                    "6.5+ Years Experience",
+                    "React / Next.js / TypeScript",
+                    "Frontend Architecture",
+                    "Performance Optimization",
+                    "AI-Driven Interfaces",
+                    "New Delhi, India",
+                  ].map((token) => (
+                    <span className="hero-ticker-item" key={token}>
+                      {token}
+                      <span className="hero-ticker-dot" />
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div> */}
+
+     
 
           <div className="hero-content">
             <div className="hero-meta" aria-label="Position info">

@@ -244,6 +244,30 @@ export default function AnimationController() {
           }
         );
       });
+
+      // Ghost word drift — giant background watermarks (WORK / METRICS /
+      // STACK) scrub horizontally as their section passes the viewport.
+      if (!prefersReducedMotion) {
+        document
+          .querySelectorAll<HTMLElement>("#experience, #metrics, #stack")
+          .forEach((section) => {
+            gsap.fromTo(
+              section,
+              { "--gw-x": "70px", "--gw-y": "24px" },
+              {
+                "--gw-x": "-70px",
+                "--gw-y": "-24px",
+                ease: "none",
+                scrollTrigger: {
+                  trigger: section,
+                  start: "top bottom",
+                  end: "bottom top",
+                  scrub: true,
+                },
+              }
+            );
+          });
+      }
     };
 
     // ============================================================
@@ -257,12 +281,43 @@ export default function AnimationController() {
           if (nav) {
             nav.classList.toggle("scrolled", window.scrollY > 60);
           }
+          // Scroll progress (drives .nav-progress scaleX via --sp)
+          const max =
+            document.documentElement.scrollHeight - window.innerHeight;
+          document.documentElement.style.setProperty(
+            "--sp",
+            String(max > 0 ? Math.min(window.scrollY / max, 1) : 0)
+          );
           navTicking = false;
         });
         navTicking = true;
       }
     };
     window.addEventListener("scroll", handleNavScroll, { passive: true });
+
+    // ============================================================
+    // PROJECT MOCKUP TILT (mouse-reactive, fine pointer only)
+    // ============================================================
+    const setupProjectTilt = () => {
+      if (!window.matchMedia("(pointer: fine)").matches) return;
+      document.querySelectorAll<HTMLElement>(".project-card").forEach((card) => {
+        const visual = card.querySelector<HTMLElement>(".project-visual-inner");
+        if (!visual) return;
+        const onMove = (e: MouseEvent) => {
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          visual.style.setProperty("--tilt-x", `${(-py * 3).toFixed(2)}deg`);
+          visual.style.setProperty("--tilt-y", `${(px * 3).toFixed(2)}deg`);
+        };
+        const onLeave = () => {
+          visual.style.setProperty("--tilt-x", "0deg");
+          visual.style.setProperty("--tilt-y", "0deg");
+        };
+        card.addEventListener("mousemove", onMove);
+        card.addEventListener("mouseleave", onLeave);
+      });
+    };
 
     // ============================================================
     // CUSTOM CURSOR
@@ -306,6 +361,7 @@ export default function AnimationController() {
       });
     };
     setupCursor();
+    setupProjectTilt();
 
     // ============================================================
     // MOBILE MENU

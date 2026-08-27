@@ -42,7 +42,7 @@ export default function HeroScene() {
 
         // Scene
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x080808, 0.04);
+        scene.fog = new THREE.FogExp2(0x020c07, 0.04);
 
         // Camera
         const camera = new THREE.PerspectiveCamera(
@@ -53,19 +53,19 @@ export default function HeroScene() {
         );
         camera.position.set(0, 0, 4);
 
-        // Lights
+        // Lights — terminal-dark-green key/fill pair + cool white rim
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.15);
         scene.add(ambientLight);
 
-        const pointLight1 = new THREE.PointLight(0x4a9eff, 4, 12);
+        const pointLight1 = new THREE.PointLight(0x00ff66, 3.4, 12);
         pointLight1.position.set(2, 3, 2);
         scene.add(pointLight1);
 
-        const pointLight2 = new THREE.PointLight(0x8888ff, 2, 10);
+        const pointLight2 = new THREE.PointLight(0x00c853, 1.9, 10);
         pointLight2.position.set(-3, -1, 1);
         scene.add(pointLight2);
 
-        const rimLight = new THREE.PointLight(0xffffff, 1, 8);
+        const rimLight = new THREE.PointLight(0xeafff3, 1.1, 8);
         rimLight.position.set(0, 0, 5);
         scene.add(rimLight);
 
@@ -87,10 +87,10 @@ export default function HeroScene() {
         // Wireframe overlay
         const wireGeo = new THREE.IcosahedronGeometry(1.22, isMobile ? 2 : 4);
         const wireMat = new THREE.MeshBasicMaterial({
-          color: 0x4a9eff,
+          color: 0x00c853,
           wireframe: true,
           transparent: true,
-          opacity: 0.06,
+          opacity: 0.07,
         });
         const wireMesh = new THREE.Mesh(wireGeo, wireMat);
         scene.add(wireMesh);
@@ -101,9 +101,9 @@ export default function HeroScene() {
             time: { value: 0 },
             mouseX: { value: 0 },
             mouseY: { value: 0 },
-            colorA: { value: new THREE.Color(0x0b1a2e) },
-            colorB: { value: new THREE.Color(0x1a2a1e) },
-            colorAccent: { value: new THREE.Color(0x4a9eff) },
+            colorA: { value: new THREE.Color(0x051309) },
+            colorB: { value: new THREE.Color(0x0d2f1c) },
+            colorAccent: { value: new THREE.Color(0x00ff66) },
           },
           vertexShader: `
             uniform float time;
@@ -202,11 +202,11 @@ export default function HeroScene() {
               baseColor = mix(baseColor, colorAccent, accent * 0.35);
               
               vec3 color = baseColor * (0.3 + diffuse * 0.7 + diffuse2 * 0.2);
-              color += colorAccent * diffuse * 0.12;
+              color += colorAccent * diffuse * 0.18;
               
               float rim = 1.0 - max(dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0);
               rim = pow(rim, 3.0);
-              color += colorAccent * rim * 0.25;
+              color += colorAccent * rim * 0.34;
               
               gl_FragColor = vec4(color, 0.92);
             }
@@ -217,20 +217,30 @@ export default function HeroScene() {
         const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
-        // Particle field
-        const particleCount = isMobile ? 600 : isTablet ? 1200 : 2200;
+        // ---- Activity/data particles ---------------------------------
+        // Mixed population: "drifters" floating through space + "orbiters"
+        // loosely circling the core. All motion (drift / orbit / cursor
+        // repulsion / flicker) is computed inside the vertex shader —
+        // zero CPU buffer uploads and zero React re-renders per frame.
+        const particleCount = isMobile ? 260 : isTablet ? 480 : 850;
         const particleGeo = new THREE.BufferGeometry();
         const particlePositions = new Float32Array(particleCount * 3);
         const particleSizes = new Float32Array(particleCount);
+        const particleSeeds = new Float32Array(particleCount);
 
         for (let i = 0; i < particleCount; i++) {
+          const orbiter = Math.random() < 0.34;
           const theta = Math.random() * Math.PI * 2;
           const phi = Math.acos(2 * Math.random() - 1);
-          const r = 2.2 + Math.random() * 4;
+          const r = orbiter ? 1.75 + Math.random() * 0.9 : 2.1 + Math.random() * 3.6;
           particlePositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-          particlePositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+          particlePositions[i * 3 + 1] = (r * Math.sin(phi) * Math.sin(theta)) * 0.72;
           particlePositions[i * 3 + 2] = r * Math.cos(phi) - 1;
-          particleSizes[i] = Math.random() * 1.5 + 0.5;
+          // size: varied, smaller on mobile tiers
+          particleSizes[i] =
+            (isMobile ? 0.7 : 1) * (Math.random() < 0.12 ? 1.8 : 0.55 + Math.random() * 1.15);
+          // seed encodes: int part → role (x ≥ 1 ⇒ orbiter), frac → phase
+          particleSeeds[i] = (orbiter ? 1 : 0) + Math.random();
         }
 
         particleGeo.setAttribute(
@@ -238,16 +248,87 @@ export default function HeroScene() {
           new THREE.BufferAttribute(particlePositions, 3)
         );
         particleGeo.setAttribute(
-          "size",
+          "aSize",
           new THREE.BufferAttribute(particleSizes, 1)
         );
+        particleGeo.setAttribute(
+          "aSeed",
+          new THREE.BufferAttribute(particleSeeds, 1)
+        );
 
-        const particleMat = new THREE.PointsMaterial({
-          color: 0x6ab4ff,
-          size: 0.015,
+        const particleMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0 },
+            uPointer: { value: new THREE.Vector3(9999, 9999, 0) },
+            uPxRatio: { value: dpr },
+          },
+          vertexShader: `
+            uniform float uTime;
+            uniform vec3 uPointer;
+            uniform float uPxRatio;
+            attribute float aSize;
+            attribute float aSeed;
+            varying float vAlpha;
+
+            void main() {
+              float role  = step(0.5, floor(aSeed));   // 1 => orbiter
+              float phase = fract(aSeed) * 6.28318;
+
+              vec3 p = position;
+
+              if (role > 0.5) {
+                // Loosely orbit the core around its Y axis (per-particle speed/direction)
+                float rad = length(position.xz);
+                float dir = mod(floor(aSeed * 7.0), 2.0) < 1.0 ? 1.0 : -1.0;
+                float spd = 0.10 + fract(aSeed * 3.17) * 0.16;
+                float ang = uTime * spd * dir + phase;
+                p.x = cos(ang) * rad;
+                p.z = sin(ang) * rad;
+              } else {
+                // Slow organic drift for ambient particles
+                p += 0.13 * sin(uTime * vec3(0.21, 0.27, 0.19) + phase + position);
+              }
+
+              // Cursor repulsion — smooth falloff, softly pushes nearby
+              // particles away; they ease back as uPointer moves away.
+              vec3 away = p - uPointer;
+              float dl  = length(away);
+              float push = smoothstep(1.25, 0.0, dl);
+              p += normalize(away + 0.0001) * push * 0.42;
+
+              vec4 mv = modelViewMatrix * vec4(p, 1.0);
+
+              // Depth-based fade so far particles melt into fog
+              float depthFade = smoothstep(-14.0, -2.5, mv.z);
+
+              // Gentle breathing + occasional bright flicker (~8% of particles)
+              float breathe = 0.62 + 0.22 * sin(uTime * 0.9 + aSeed * 40.0);
+              float sparkSpeed = 0.7 + fract(aSeed * 11.3) * 2.2;
+              float spark = pow(max(sin(uTime * sparkSpeed + aSeed * 97.0), 0.0), 26.0)
+                            * step(0.92, fract(aSeed * 5.7));
+              vAlpha = depthFade * clamp(breathe + spark * 0.9, 0.05, 1.35);
+
+              gl_PointSize = aSize * uPxRatio * (52.0 / max(-mv.z, 0.001));
+              gl_Position = projectionMatrix * mv;
+            }
+          `,
+          fragmentShader: `
+            varying float vAlpha;
+
+            void main() {
+              vec2 uv = gl_PointCoord - 0.5;
+              float d = length(uv);
+              float soft = smoothstep(0.5, 0.06, d);
+              if (soft < 0.02) discard;
+
+              vec3 green = vec3(0.28, 1.0, 0.56);      // softened #00FF66
+              vec3 deep  = vec3(0.02, 0.09, 0.05);     // terminal-green-black edge
+              vec3 col   = mix(deep, green, soft);
+
+              gl_FragColor = vec4(col, soft * min(vAlpha, 0.85));
+            }
+          `,
           transparent: true,
-          opacity: 0.5,
-          sizeAttenuation: true,
           blending: THREE.AdditiveBlending,
           depthWrite: false,
         });
@@ -259,6 +340,12 @@ export default function HeroScene() {
         const mouse = { x: 0, y: 0, vx: 0, vy: 0 };
         const targetRot = { x: 0, y: 0 };
         const currentRot = { x: 0, y: 0 };
+
+        // Scratch vectors for cursor → world projection (no per-frame allocs)
+        const tmpVec = new THREE.Vector3();
+        const dirVec = new THREE.Vector3();
+        const pointerTarget = new THREE.Vector3(9999, 9999, 0);
+        const pointerSmooth = new THREE.Vector3(9999, 9999, 0);
 
         const handleMouseMove = (e: MouseEvent) => {
           const px = e.clientX / window.innerWidth;
@@ -322,6 +409,16 @@ export default function HeroScene() {
           (material.uniforms.time as { value: number }).value = time;
           (material.uniforms.mouseX as { value: number }).value = mouse.x * 0.5;
           (material.uniforms.mouseY as { value: number }).value = mouse.y * 0.5;
+
+          // Particle cursor target — project NDC mouse onto the z=0 plane,
+          // smoothed so repulsion eases in/out organically.
+          tmpVec.set(mouse.x, mouse.y, 0.5).unproject(camera);
+          dirVec.copy(tmpVec).sub(camera.position).normalize();
+          const tPlane = -camera.position.z / dirVec.z;
+          pointerTarget.copy(camera.position).addScaledVector(dirVec, tPlane);
+          pointerSmooth.lerp(pointerTarget, 0.06);
+          particleMat.uniforms.uPointer.value.copy(pointerSmooth);
+          particleMat.uniforms.uTime.value = time;
 
           // Slow rotation
           mesh.rotation.y = time * 0.08;
