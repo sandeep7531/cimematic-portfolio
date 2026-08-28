@@ -644,8 +644,8 @@ body::before {
 }
 
 .about-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* display: grid; */
+  /* grid-template-columns: 1fr 1fr; */
   gap: 4rem 8rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -680,7 +680,7 @@ body::before {
   font-size: clamp(0.9rem, 1.2vw, 1.0625rem);
   line-height: 1.75;
   color: var(--text-secondary);
-  max-width: 44ch;
+  /* max-width: 44ch; */
 }
 
 .about-detail-row {
@@ -882,6 +882,46 @@ body::before {
   overflow: hidden;
 }
 
+/* keep section content above the CRT pixel canvas */
+#experience > .section-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* dim the contained canvas so text stays readable over it */
+#experience .crt-pixel-bg--contained {
+  opacity: 0.55;
+}
+
+/* brighter text over the pixel backdrop */
+#experience .exp-company {
+  color: #ffffff;
+}
+
+#experience .exp-role,
+#experience .exp-highlight,
+#experience .exp-period,
+#experience .exp-tag {
+  color: #ffffff;
+}
+
+#experience .exp-index {
+  color: var(--accent);
+}
+
+#experience .exp-tag {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+#experience .exp-highlight {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+
+#experience .exp-company {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+
 #experience::after {
   content: 'WORK';
   position: absolute;
@@ -905,7 +945,7 @@ body::before {
 }
 
 .exp-item {
-  display: grid;
+  /* display: grid; */
   grid-template-columns: 80px 1fr 1fr;
   position: relative;
   z-index: 1;
@@ -1463,7 +1503,7 @@ body::before {
 
 @media (min-width: 769px) {
   .about-section-wrap .about-right {
-    padding-top: 6rem;
+    padding-top: 4rem;
   }
 }
 
@@ -1919,3 +1959,59 @@ body::before {
   z-index: 1;
 }
 
+
+/* ============================================================
+   CRT PIXEL PARTICLE BACKGROUND
+   Canvas-rendered, fixed, purely decorative. Sits behind all
+   content (z-index -1), under the grain overlay. No pointer
+   events. Reduced-motion: static grid, no loop.
+   ============================================================ */
+.crt-pixel-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  /* subtle vignette so pixels fade toward edges (CRT tube feel) */
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 90% at 50% 50%,
+    black 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 90% at 50% 50%,
+    black 55%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 768px) {
+  .crt-pixel-bg {
+    opacity: 0.7;
+  }
+}
+
+/* Contained variant: absolute within a section (e.g. #experience) */
+.crt-pixel-bg--contained {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  /* vertical fade so the grid melts into adjacent sections */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 12%,
+    black 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 12%,
+    black 88%,
+    transparent 100%
+  );
+}

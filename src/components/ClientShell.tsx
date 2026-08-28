@@ -17,6 +17,11 @@ const AnimationController = dynamic(
   { ssr: false }
 );
 
+const CrtPixelBackground = dynamic(
+  () => import("@/components/three/CrtPixelBackground"),
+  { ssr: false, loading: () => null }
+);
+
 export function HeroSceneWrapper() {
   return <HeroScene />;
 }
@@ -27,4 +32,10 @@ export function AINodesWrapper() {
 
 export function AnimationControllerWrapper() {
   return <AnimationController />;
+}
+
+export function CrtPixelBackgroundWrapper(props: {
+  contained?: boolean;
+}) {
+  return <CrtPixelBackground {...props} />;
 }

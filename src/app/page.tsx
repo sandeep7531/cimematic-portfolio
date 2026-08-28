@@ -3,6 +3,7 @@ import {
   HeroSceneWrapper,
   AINodesWrapper,
   AnimationControllerWrapper,
+  CrtPixelBackgroundWrapper,
 } from "@/components/ClientShell";
 import { experience } from "@/data/experience";
 import { projects } from "@/data/projects";
@@ -385,6 +386,7 @@ export default function Home() {
             EXPERIENCE SECTION
             ============================================================ */}
         <section id="experience" aria-label="Work experience">
+          <CrtPixelBackgroundWrapper contained />
           <div className="section-container">
             <div className="experience-inner">
               <div className="section-label">
