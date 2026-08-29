@@ -1238,63 +1238,62 @@ body::before {
   margin: 0 auto;
 }
 
-.stack-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin-top: 4rem;
-  border-top: 1px solid var(--border-subtle);
-  border-left: 1px solid var(--border-subtle);
-}
-
-.stack-item {
-  padding: 1.25rem 1.5rem;
-  border-right: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+/* --- Periodic table element cards (surface/layout via Tailwind) --- */
+.element-card {
   cursor: default;
-  transition: background 0.2s ease;
-  position: relative;
-  overflow: hidden;
 }
 
-.stack-item::after {
-  content: '';
+/* Card visuals (sizes/colors/positioning) are Tailwind utilities defined in
+   Stack.tsx; .element-symbol/.element-name remain in the markup purely as
+   hooks for the eaten-state selectors below. */
+
+/* --- Pac-Man dual-canvas overlay (strictly bounded to the game frame):
+       maze/pellets under the transparent cards, sprites above them --- */
+.pacman-canvas {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--accent);
-  transition: width 0.3s var(--ease-out-expo);
-}
-
-.stack-item:hover::after {
+  inset: 0;
   width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-.stack-item:hover {
-  background: var(--bg-elevated);
+.pacman-canvas--bg {
+  z-index: 0;
 }
 
-.stack-item-name {
-  font-size: clamp(0.875rem, 1.5vw, 1.125rem);
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  color: var(--text-secondary);
-  transition: color 0.2s ease;
-  white-space: nowrap;
+.pacman-canvas--fg {
+  z-index: 20;
 }
 
-.stack-item:hover .stack-item-name {
-  color: var(--text-primary);
+/* eaten / regenerating element states (driven by pacmanStore);
+   terminal-green to match the phosphor theme */
+.element-card--eaten .element-symbol,
+.element-card--eaten .element-name {
+  color: #34d399;
+  animation: skill-glitch 0.15s steps(2) infinite;
+  font-family: var(--font-mono, ui-monospace, monospace);
 }
 
-.stack-item-cat {
-  font-size: 0.5625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-top: 0.2rem;
+@keyframes skill-glitch {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(1px);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .element-card--eaten .element-symbol,
+  .element-card--eaten .element-name {
+    animation: none;
+  }
 }
 
 /* ============================================================
@@ -1507,14 +1506,7 @@ body::before {
   }
 }
 
-/* ============================================================
-   STACK GRID ITEMS
-   ============================================================ */
-@media (max-width: 480px) {
-  .stack-item-name {
-    font-size: 0.8125rem;
-  }
-}
+/* (Legacy flat-list mobile rules removed — periodic grid is responsive.) */
 
 /* ============================================================
    SECTION LABEL COMPONENT

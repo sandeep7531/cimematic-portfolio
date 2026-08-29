@@ -22,6 +22,8 @@ const CrtPixelBackground = dynamic(
   { ssr: false, loading: () => null }
 );
 
+const Stack = dynamic(() => import("@/components/Stack"), { ssr: false });
+
 export function HeroSceneWrapper() {
   return <HeroScene />;
 }
@@ -38,4 +40,12 @@ export function CrtPixelBackgroundWrapper(props: {
   contained?: boolean;
 }) {
   return <CrtPixelBackground {...props} />;
+}
+
+/**
+ * Periodic Tech Stack section. The bounded game frame (canvas + element
+ * grid) lives inside Stack.tsx so canvas and cards share one container.
+ */
+export function StackSectionWrapper() {
+  return <Stack />;
 }

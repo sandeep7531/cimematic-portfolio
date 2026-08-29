@@ -168,8 +168,8 @@ export default function AnimationController() {
         );
       });
 
-      // Stack items
-      document.querySelectorAll<HTMLElement>(".stack-item").forEach((el, i) => {
+      // Periodic element cards
+      document.querySelectorAll<HTMLElement>(".element-card").forEach((el, i) => {
         gsap.fromTo(
           el,
           { opacity: 0 },
@@ -347,7 +347,7 @@ export default function AnimationController() {
       };
       followRing();
 
-      document.querySelectorAll("a, button, .stack-item, .nav-link, .ai-cap").forEach((el) => {
+      document.querySelectorAll("a, button, .element-card, .nav-link, .ai-cap").forEach((el) => {
         el.addEventListener("mouseenter", () => ring.classList.add("hovering"));
         el.addEventListener("mouseleave", () => ring.classList.remove("hovering"));
       });

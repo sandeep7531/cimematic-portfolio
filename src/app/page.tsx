@@ -4,10 +4,10 @@ import {
   AINodesWrapper,
   AnimationControllerWrapper,
   CrtPixelBackgroundWrapper,
+  StackSectionWrapper,
 } from "@/components/ClientShell";
 import { experience } from "@/data/experience";
 import { projects } from "@/data/projects";
-import { skills } from "@/data/skills";
 
 export const metadata: Metadata = {
   title: "Sandeep Rai — Senior Frontend Engineer",
@@ -544,7 +544,7 @@ export default function Home() {
               <div className="section-label">
                 <span className="section-label-index">04</span>
                 <div className="section-label-line" aria-hidden="true" />
-                <span className="section-label-text">Stack</span>
+                <span className="section-label-text">Periodic Tech Stack</span>
               </div>
 
               <div
@@ -583,23 +583,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div
-                className="stack-grid"
-                role="list"
-                aria-label="Technology skills"
-              >
-                {skills.map((skill) => (
-                  <div
-                    className="stack-item"
-                    key={skill.name}
-                    role="listitem"
-                    title={skill.category}
-                  >
-                    <div className="stack-item-name">{skill.name}</div>
-                    <div className="stack-item-cat">{skill.category}</div>
-                  </div>
-                ))}
-              </div>
+              <StackSectionWrapper />
             </div>
           </div>
         </section>
